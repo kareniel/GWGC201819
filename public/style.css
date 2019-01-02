@@ -1,0 +1,71 @@
+@import url(https://fonts.googleapis.com/css?family=Inconsolata:400,700);
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+}
+
+canvas {
+  background-color: black;
+}
+
+.container {
+  padding-top: calc(1080 / 1920 * 100%);
+  position: relative;
+}
+
+.terminal, .terminal input, .terminal textarea {
+  margin: 1em;
+  font: 1em 'Inconsolata';
+  color: #ffffff;
+  font-weight: 400;
+  padding: 0;
+  font-size: 1.5em;
+}
+
+input[type="text"]{
+  font: 1em 'Inconsolata';
+  margin:0 0.5em;
+  border: none;
+  background: #000;
+  width:50%
+  color: #fff;
+}
+
+input[type="text"]:focus{
+  background: #000;
+  color: #fff;
+  outline:none;
+}
+
+#overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+#left-screen {
+  position: absolute;
+  top: 16.94444444%;
+  left: 3.177083333%;
+  width: 53.33333%;
+  height: 71.11111111%;
+  z-index: 100;
+}
+
+#right-screen {
+  position: absolute;
+  top: 6.944444444%;
+  right: 3.28%;
+  width: 37.5%;
+  height: 44.4444444444%;
+  z-index: 100;
+}
