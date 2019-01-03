@@ -1,97 +1,102 @@
 var EventEmitter = require('events')
 
+var audio = require('./audio')
+var { randomInt, sleep } = require('./utils')
+
 module.exports = class Terminal extends EventEmitter {
   constructor (el) {
     super()
 
     this.el = el
+    this.preInput = 'hacker@spacecraft:/$ '
 
     this.historyEl = el.querySelectorAll('#history')[0]
     this.inputEl = el.querySelectorAll('#input')[0]
 
-    var text = document.createElement('pre')
-    text.innerHTML = 'Hello!'
-
-    this.history = [ text ]
+    this.history = []
     this.inputValue = ''
-    this.historyEl.appendChild(text)
-
-    this.audio = {
-      enter: new Audio('sounds/enter.mp3'),
-      backspace: new Audio('sounds/backsp.mp3'),
-      keys: [
-        new Audio('sounds/key0.mp3'),
-        new Audio('sounds/key1.mp3'),
-        new Audio('sounds/key2.mp3'),
-        new Audio('sounds/key3.mp3'),
-        new Audio('sounds/key4.mp3')
-      ]
-    }
 
     document.addEventListener('keyup', e => {
+      if (this.printing) return
       if (e.key === 'Backspace') return this.erase()
     })
 
-    document.addEventListener('keypress', e => {
-      if (e.key === 'Enter') return this.exec()
+    document.addEventListener('keypress', async (e) => {
+      if (this.printing) return
+      if (e.key === 'Enter') {
+        this.eraseInput()
+        await this.exec(this.inputValue)
+        this.inputValue = ''
+        this.updateInput()
+
+        return
+      }
 
       this.inputValue += String.fromCharCode(e.which)
       this.updateInput()
-      this.play('key')
+      audio.play('key')
     })
+
+    this.updateInput()
   }
 
   erase () {
     this.inputValue = this.inputValue.slice(0, -1)
     this.updateInput()
-    this.play('backspace')
+    audio.play('backspace')
   }
 
-  exec () {
+  async print (text, delay = true) {
+    this.printing = true
     var el = document.createElement('pre')
-    el.innerHTML = this.inputValue
 
-    this.history.push(el)
     this.historyEl.appendChild(el)
 
-    this.inputValue = ''
-    this.updateInput()
-    this.play('enter')
+    this.updateScroll()
+
+    for (let char of text.split('')) {
+      el.innerHTML = el.innerHTML + char
+      if (delay) await sleep(20)
+    }
+
+    await sleep(40)
+    this.printing = false
+  }
+
+  async clear () {
+    this.historyEl.querySelectorAll('*').forEach(el => {
+      this.historyEl.removeChild(el)
+    })
+  }
+
+  async exec (cmd) {
+    audio.play('enter')
+    this.history.push(cmd)
+
+    await this.print(this.preInput + cmd, false)
+
+    switch (cmd) {
+      case '':
+        await this.print('')
+        break
+      case 'clear':
+        await this.clear()
+        break
+      default:
+        await this.print(cmd + ': Command not found.')
+        break
+    }
   }
 
   updateInput () {
-    this.inputEl.innerHTML = this.inputValue
+    this.inputEl.innerHTML = this.preInput + this.inputValue + '█'
   }
 
-  play (key) {
-    if (key === 'key') return this.playRandomKeySound()
-    var el = this.audio[key]
-
-    if (!el) return console.error(key, 'does not exist')
-
-    el.currentTime = 0
-    el.play()
+  eraseInput () {
+    this.inputEl.innerHTML = ''
   }
 
-  playRandomKeySound () {
-    var index = this.lastAudioKeyIndex
-
-    while (index === this.lastAudioKeyIndex) {
-      index = randomInt(0, 4)
-    }
-
-    var el = this.audio.keys[index]
-
-    el.currentTime = 0
-    el.play()
-
-    this.lastAudioKeyIndex = index
+  updateScroll () {
+    this.el.scrollTop = this.el.scrollHeight
   }
-}
-
-function randomInt (min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-
-  return Math.floor(Math.random() * (max - min + 1)) + min
 }
