@@ -10,5 +10,9 @@ function init () {
 
     var canvas = document.getElementById('right-screen')
     var camera = new Camera(canvas)
+
+    global.camera = camera
+
+    camera.connect(term)
   })
 }

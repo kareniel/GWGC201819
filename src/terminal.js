@@ -69,11 +69,20 @@ module.exports = class Terminal extends EventEmitter {
     })
   }
 
-  async exec (cmd) {
-    audio.play('enter')
-    this.history.push(cmd)
+  async camera (args) {
+    this.print(args.join(' '))
+    return this.emit('camera:' + args[0])
+  }
 
-    await this.print(this.preInput + cmd, false)
+  async exec (text) {
+    audio.play('enter')
+    this.history.push(text)
+
+    await this.print(this.preInput + text, false)
+
+    var words = text.split(' ')
+    var cmd = words[0]
+    var args = words.slice(1)
 
     switch (cmd) {
       case '':
@@ -81,6 +90,9 @@ module.exports = class Terminal extends EventEmitter {
         break
       case 'clear':
         await this.clear()
+        break
+      case 'camera':
+        await this.camera(args)
         break
       default:
         await this.print(cmd + ': Command not found.')

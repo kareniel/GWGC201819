@@ -6,6 +6,8 @@ const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 const base64Map = base64Chars.split('')
 const reversedBase64Map = { }
 
+var canvas = document.createElement('canvas')
+
 base64Map.forEach((val, key) => { reversedBase64Map[val] = key })
 
 module.exports = function glitchCanvas (canvas) {
@@ -19,8 +21,13 @@ module.exports = function glitchCanvas (canvas) {
 
     var img = new Image(canvas.width, canvas.height)
 
+    var timer = setTimeout(() => {
+      resolve()
+    }, 200)
+
     img.onload = function () {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      clearTimeout(timer)
       resolve()
     }
 
@@ -30,8 +37,6 @@ module.exports = function glitchCanvas (canvas) {
 
 function imageDataToBase64 (imageData, quality = 90) {
   return new Promise((resolve, reject) => {
-    var canvas = document.createElement('canvas')
-
     canvas.width = imageData.width
     canvas.height = imageData.height
 
@@ -66,6 +71,35 @@ function jpgHeaderLength (byteArr) {
   return result
 }
 
+function base64ToByteArray (base64URL) {
+  const result = [ ]
+  let prev
+
+  for (var i = 23, len = base64URL.length; i < len; i++) {
+    const currrentChar = reversedBase64Map[ base64URL.charAt(i) ]
+    const digitNum = (i - 23) % 4
+
+    switch (digitNum) {
+      // case 0: first digit - do nothing, not enough info to work with
+      case 1: // second digit
+        result.push(prev << 2 | currrentChar >> 4)
+        break
+
+      case 2: // third digit
+        result.push((prev & 0x0f) << 4 | currrentChar >> 2)
+        break
+
+      case 3: // fourth digit
+        result.push((prev & 3) << 6 | currrentChar)
+        break
+    }
+
+    prev = currrentChar
+  }
+
+  return result
+}
+
 function glitchByteArray (byteArray) {
   var seed = randomInt(0, 100)
   var amount = randomInt(0, 100)
@@ -94,35 +128,6 @@ function glitchByteArray (byteArray) {
   }
 
   return byteArray
-}
-
-function base64ToByteArray (base64URL) {
-  const result = [ ]
-  let prev
-
-  for (var i = 23, len = base64URL.length; i < len; i++) {
-    const currrentChar = reversedBase64Map[ base64URL.charAt(i) ]
-    const digitNum = (i - 23) % 4
-
-    switch (digitNum) {
-      // case 0: first digit - do nothing, not enough info to work with
-      case 1: // second digit
-        result.push(prev << 2 | currrentChar >> 4)
-        break
-
-      case 2: // third digit
-        result.push((prev & 0x0f) << 4 | currrentChar >> 2)
-        break
-
-      case 3: // fourth digit
-        result.push((prev & 3) << 6 | currrentChar)
-        break
-    }
-
-    prev = currrentChar
-  }
-
-  return result
 }
 
 function byteArrayToBase64 (byteArray) {
