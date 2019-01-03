@@ -17,6 +17,20 @@ pre {
   line-height: 1em;
 }
 
+#menu {
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: #000000;
+  z-index: 500;
+  color: white;
+  font: 2em monospace;
+  text-align: center;
+}
+
 .container {
   padding-top: calc(1080 / 1920 * 100%);
   position: relative;
@@ -55,6 +69,7 @@ pre {
   width: 53.33333%;
   height: 71.11111111%;
   overflow-y: hidden;
+  overflow-x: hidden;
   z-index: 100;
   border: 1px solid #666;
 }

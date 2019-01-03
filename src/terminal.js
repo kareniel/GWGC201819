@@ -12,6 +12,7 @@ module.exports = class Terminal extends EventEmitter {
 
     this.historyEl = el.querySelectorAll('#history')[0]
     this.inputEl = el.querySelectorAll('#input')[0]
+    this.menuEl = el.querySelectorAll('#menu')[0]
 
     this.history = []
     this.inputValue = ''
@@ -19,6 +20,7 @@ module.exports = class Terminal extends EventEmitter {
     document.addEventListener('keyup', e => {
       if (this.printing) return
       if (e.key === 'Backspace') return this.erase()
+      if (e.key === 'Escape') return this.toggleMenu()
     })
 
     document.addEventListener('keypress', async (e) => {
@@ -38,6 +40,13 @@ module.exports = class Terminal extends EventEmitter {
     })
 
     this.updateInput()
+  }
+
+  toggleMenu () {
+    audio.beep()
+    this.menuEl.style.display = this.menuEl.style.display === 'none'
+      ? 'block'
+      : 'none'
   }
 
   erase () {
