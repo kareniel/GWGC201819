@@ -1,5 +1,5 @@
 { "columns":8,
- "image":"tileset-01.png",
+ "image":"..\/public\/tiles.png",
  "imageheight":128,
  "imagewidth":128,
  "margin":0,
@@ -36,5 +36,6 @@
         }
     },
  "tilewidth":16,
+ "transparentcolor":"#f30393",
  "type":"tileset"
 }
