@@ -12,7 +12,7 @@ module.exports = class Camera {
     this.canvas = canvas
     this.world = world
 
-    this.online = true
+    this.online = false
 
     this.x = 0
     this.y = 0
@@ -54,13 +54,13 @@ module.exports = class Camera {
   async draw () {
     if (this.online) {
       this.drawOnline()
+
+      if (randomInt(0, 25) === 0) {
+        await glitchCanvas(this.canvas)
+        await sleep(randomInt(5, 100))
+      }
     } else {
       this.drawOffline()
-    }
-
-    if (randomInt(0, 25) === 0) {
-      await glitchCanvas(this.canvas)
-      await sleep(randomInt(5, 100))
     }
   }
 
@@ -134,7 +134,7 @@ module.exports = class Camera {
 
     this.ctx.font = '16px monospace'
     this.ctx.fillStyle = 'white'
-    this.ctx.fillText('No signal', 16, 16)
+    this.ctx.fillText('No signal', 16, 32)
   }
 
   connect (bus) {

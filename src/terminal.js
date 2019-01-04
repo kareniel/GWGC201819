@@ -2,14 +2,20 @@ var EventEmitter = require('events')
 
 var audio = require('./audio')
 var { randomInt, sleep } = require('./utils')
-var { credits, gameOverText } = require('./data')
+var { introText, credits, gameOverText } = require('./data')
 
 module.exports = class Terminal extends EventEmitter {
   constructor (el) {
     super()
 
+    this.prompts = {
+      login: 'login: ',
+      password: 'password: ',
+      shell: 'hacker@spacecraft:/$ '
+    }
+
     this.el = el
-    this.preInput = 'hacker@spacecraft:/$ '
+    this.preInput = this.prompts.login
 
     this.historyEl = el.querySelectorAll('#history')[0]
     this.inputEl = el.querySelectorAll('#input')[0]
@@ -20,6 +26,12 @@ module.exports = class Terminal extends EventEmitter {
 
     this.addListeners()
     this.clear()
+
+    this.start()
+  }
+
+  async start () {
+    await this.print(introText)
     this.updateInput()
   }
 
