@@ -27,11 +27,7 @@ module.exports = class Terminal extends EventEmitter {
     this.addListeners()
     this.clear()
 
-    this.start()
-  }
-
-  async start () {
-    await this.print(introText)
+    // this.load(loginProgram)
     this.updateInput()
   }
 
