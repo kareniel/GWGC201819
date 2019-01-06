@@ -3,6 +3,16 @@ var EventEmitter = require('events')
 var audio = require('./audio')
 var { randomInt, sleep } = require('./utils')
 var { introText, credits, gameOverText } = require('./data')
+const usage = {
+  scan: `List available subsystems connected to this terminal.`,
+  connect: `Connect to one of the station's sybsystems.\n` +
+           `Usage: connect <SUBSYSTEM>`,
+  default: `Use 'help <COMMAND>' to learn how to use a given command.\n\n` +
+           `Available commands:\n` +
+           `scan\tconnect\n`
+}
+
+const SPEED = 0
 
 module.exports = class Terminal extends EventEmitter {
   constructor (el) {
@@ -23,11 +33,24 @@ module.exports = class Terminal extends EventEmitter {
 
     this.history = []
     this.inputValue = ''
+    this.context = 'login'
+    this.subsystems = [{
+      name: 'VIDEO',
+      isOnline: true
+    }, {
+      name: 'SOUND',
+      isOnline: true
+    }]
 
     this.addListeners()
-    this.clear()
 
-    // this.load(loginProgram)
+    this.start()
+  }
+
+  async start () {
+    this.clear()
+    await this.print(introText)
+
     this.updateInput()
   }
 
@@ -90,10 +113,10 @@ module.exports = class Terminal extends EventEmitter {
 
     for (let char of text.split('')) {
       el.innerHTML = el.innerHTML + char
-      if (delay) await sleep(20)
+      if (delay) await sleep(20 * SPEED)
     }
 
-    await sleep(40)
+    await sleep(40 * SPEED)
     this.printing = false
   }
 
@@ -104,13 +127,26 @@ module.exports = class Terminal extends EventEmitter {
   }
 
   async camera (args) {
-    this.print(args.join(' '))
     return this.emit('camera:' + args[0])
+  }
+
+  async help (args) {
+    var cmd = args[0]
+    var text = usage[cmd] || usage['default']
+
+    await this.print(text)
+  }
+
+  async scan (cmd) {
+    await this.clear()
+    await this.print(
+      `Online subsystems:\n` +
+      this.subsystems.map(s => s.name).join('\t')
+    )
   }
 
   async exec (text) {
     audio.play('enter')
-    this.history.push(text)
 
     await this.print(this.preInput + text, false)
 
@@ -118,26 +154,64 @@ module.exports = class Terminal extends EventEmitter {
     var cmd = words[0]
     var args = words.slice(1)
 
-    switch (cmd) {
-      case '':
-        await this.print('')
-        break
-      case 'clear':
-        await this.clear()
-        break
-      case 'camera':
-        await this.camera(args)
-        break
-      case 'cheat':
-        await this.cheat(args)
-        break
-      case 'die':
-        await this.gameOver()
-        break
+    switch (this.context) {
+      case 'shell':
+        return this.execShell(cmd, args)
+      case 'login':
+        return this.execLogin(cmd, args)
       default:
-        await this.print(cmd + ': Command not found.')
-        break
     }
+  }
+
+  async execShell (cmd, args) {
+    this.history.push(cmd + ' ' + args.join(''))
+
+    var fn = this[cmd]
+
+    if (!cmd) {
+      await this.print('')
+      return
+    }
+
+    if (!fn || typeof fn !== 'function') {
+      await this.print(cmd + ': Command not found.')
+      return
+    }
+
+    fn.call(this, args)
+  }
+
+  async connect (args) {
+    var subsystem = args[0]
+    var onlineSystems = this.subsystems
+      .filter(s => s.isOnline)
+      .map(s => s.name)
+
+    if (!subsystem) {
+
+    }
+
+    if (!onlineSystems.includes(subsystem)) {
+      await this.print(
+        `Error: Subsystem '${subsystem}' not available. \n` +
+        `Use 'scan' to get a list of available subsystems.`)
+      return
+    }
+
+    await this.print(`Communication with ${subsystem} subsystem established.`)
+  }
+
+  async execLogin (cmd) {
+    var name = cmd
+
+    this.emit('player:set-name', name)
+    this.context = 'shell'
+    this.preInput = `${name}@ALPHA4:/$ `
+
+    await this.print(
+      `\nLogged in as ${name}. \n` +
+      `Enter 'help' to list available commands.\n\n`
+    )
   }
 
   updateInput () {
@@ -152,7 +226,7 @@ module.exports = class Terminal extends EventEmitter {
     this.el.scrollTop = this.el.scrollHeight
   }
 
-  async gameOver () {
+  async die () {
     var term = this
 
     this.removeListeners()

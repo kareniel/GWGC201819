@@ -14,13 +14,9 @@ module.exports = function glitchCanvas (canvas) {
   return new Promise(async (resolve) => {
     var ctx = canvas.getContext('2d')
     var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
     var base64URL = await imageDataToBase64(imageData, randomInt(0, 100))
-
     var glitched = glitchImageData(base64URL)
-
     var img = new Image(canvas.width, canvas.height)
-
     var timer = setTimeout(() => {
       resolve()
     }, 200)
