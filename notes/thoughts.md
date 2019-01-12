@@ -23,3 +23,29 @@ Things you can manipulate:
 ie: patterns as hints of how to interact with programs
 
 - Maybe the marines can't die?
+
+---
+
+loop
+
+- level
+  1. deduct objective
+  1. interact with terminal
+  1. world changes
+    - lights turn on/off
+    - doors open
+    - workstations are activated
+    - switch is toggled
+  1. npcs react
+    - move
+    - pickup item
+    - drop item
+    - toggle a switch
+  1. complete objective
+
+
+- programs
+- systems
+- access levels
+- memory dumps
+

@@ -5,14 +5,14 @@ var { randomInt, sleep } = require('./utils')
 var { introText, credits, gameOverText } = require('./data')
 const usage = {
   scan: `List available subsystems connected to this terminal.`,
-  connect: `Connect to one of the station's sybsystems.\n` +
+  connect: `Connect to one of the station's subsystems.\n` +
            `Usage: connect <SUBSYSTEM>`,
   default: `Use 'help <COMMAND>' to learn how to use a given command.\n\n` +
            `Available commands:\n` +
            `scan\tconnect\n`
 }
 
-const SPEED = 0
+const SPEED = 1// 0
 
 module.exports = class Terminal extends EventEmitter {
   constructor (el) {
@@ -38,8 +38,11 @@ module.exports = class Terminal extends EventEmitter {
       name: 'VIDEO',
       isOnline: true
     }, {
-      name: 'SOUND',
+      name: 'DOOR',
       isOnline: true
+    }, {
+      name: 'SOUND',
+      isOnline: false
     }]
 
     this.addListeners()
@@ -141,7 +144,10 @@ module.exports = class Terminal extends EventEmitter {
     await this.clear()
     await this.print(
       `Online subsystems:\n` +
-      this.subsystems.map(s => s.name).join('\t')
+      this.subsystems
+        .filter(s => s.isOnline)
+        .map(s => s.name)
+        .join('\t')
     )
   }
 
@@ -187,9 +193,7 @@ module.exports = class Terminal extends EventEmitter {
       .filter(s => s.isOnline)
       .map(s => s.name)
 
-    if (!subsystem) {
-
-    }
+    if (!subsystem) return this.print(usage['connect'])
 
     if (!onlineSystems.includes(subsystem)) {
       await this.print(
@@ -203,6 +207,8 @@ module.exports = class Terminal extends EventEmitter {
 
   async execLogin (cmd) {
     var name = cmd
+
+    if (!name) return
 
     this.emit('player:set-name', name)
     this.context = 'shell'

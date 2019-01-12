@@ -1,5 +1,6 @@
 var Terminal = require('./terminal')
 var Camera = require('./camera')
+var { sleep } = require('./utils')
 
 init()
 
@@ -30,7 +31,24 @@ class World {
 
 function init () {
   document.addEventListener('DOMContentLoaded', () => {
-    startGame()
+    document.addEventListener('keyup', async function onKeyUp (e) {
+      if (e.key === 'Enter') {
+        document.removeEventListener('keyup', onKeyUp)
+        var el = document.querySelectorAll('.start')[0]
+
+        for (let i = 0; i < el.children.length; i++) {
+          el.children[i].classList += ' out'
+        }
+
+        await sleep(1000)
+
+        el.classList += ' out'
+
+        await sleep(1000)
+
+        startGame()
+      }
+    })
   })
 }
 
